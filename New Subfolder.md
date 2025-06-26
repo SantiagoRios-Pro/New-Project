@@ -105,7 +105,13 @@ GROUP BY ticker; -- To get values per security
 ```
 ![image](https://github.com/user-attachments/assets/079143ae-ac81-43ae-86ea-70ff8ac14e39)
 
+Top three gainers from these timeframes in terms of average returns: 
+12 months -> ![image](https://github.com/user-attachments/assets/eb7412cc-1e80-4ca2-bb9f-55e410b63b66)
+18 months -> ![image](https://github.com/user-attachments/assets/e09af745-6224-4e09-84ae-5693454d5e92)
+24 months -> ![image](https://github.com/user-attachments/assets/f2b1a8c5-721e-4940-a56b-37c6636cf36f)
+
 I will now calculate the trailing 12‑, 18‑, and 24‑month total return for the overall portfolio.
+
 ```sql
 SELECT 
     AVG((value - p12) / p12) AS avg_return_12_months,
@@ -127,9 +133,9 @@ WHERE date = '2022-09-09'
 
 #### Insights
 
-* **UNG, PFIX, CNC** led the 12‑month period with 59 %, 56 %, and 48 % average returns respectively.
-* The portfolio’s aggregate 12‑month return was **‑4.7 %**, indicating a recent draw‑down despite standout winners.
-* Over 24 months the portfolio is **+8.4 %**, showing long‑term gains but a deteriorating short‑term trend.
+These queries helped us evaluate individual asset performance and overall portfolio returns over 12, 18, and 24 months. Over the past 12 months, the portfolio experienced a 4.7% decline, despite strong gains from assets like UNG (59%), PFIX (56%), and CNC (48%). Similarly, the 18-month return showed a smaller decline of 1.5%, with top performers including UNG (179%), PANW (64%), and NVO (56%). In contrast, the 24-month analysis revealed an 8.4% overall gain, led by PANW (136%), UNG (118%), and PFG (101%).
+
+These results suggest that while some assets have consistently performed well, others have significantly underperformed, especially in the more recent periods. The positive long-term trend contrasts with the short-term declines, signaling a potential shift in performance momentum. This emphasizes the need for a thorough review of the current asset allocation and investment strategies to address recent underperformance and ensure the portfolio stays aligned with long-term growth objectives.
 
 ![12 – 24 Month Return Trend](INSERT_GRAPH_PATH_HERE)
 
