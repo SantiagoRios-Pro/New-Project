@@ -33,21 +33,28 @@
 The view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 3.
 
 ```sql
-CREATE OR REPLACE VIEW invest.v_santiago_rios_castro_bistre_holdings AS
+USE Invest; -- database with all clients
+
+CREATE VIEW paul_bistre_portfolio_view AS
 SELECT
-    c.client_id,
-    c.asset_id,
-    a.asset_name,
-    a.asset_class_major,
-    a.asset_class_minor,
-    a.asset_type,          -- stock, ETF, bond, etc.
-    p.price_date,
-    p.close_price
-FROM invest.clients            AS c
-JOIN invest.assets             AS a ON a.asset_id  = c.asset_id
-JOIN invest.prices             AS p ON p.asset_id  = a.asset_id
-WHERE c.client_id = 148        -- Paul Bistre only
-  AND p.price_date >= CURRENT_DATE - INTERVAL '730 days';
+    sm.ticker,
+    sm.security_name,
+    sm.major_asset_class,
+    sm.minor_asset_class,
+    sm.sec_type,
+    pd.price_type,
+    pd.value,
+    hc.quantity,
+    pd.value * hc.quantity AS total_value, -- calculates the total value invested in the asset
+    pd.date
+FROM account_dim AS ad
+JOIN holdings_current AS hc USING(account_id)
+JOIN pricing_daily_new AS pd USING(ticker)
+JOIN security_masterlist AS sm USING(ticker)
+WHERE
+    pd.price_type = 'adjusted' -- to use only this type of price as discussed in class
+    AND ad.client_id = 148     -- filters only for data regarding Paul Bistre
+    AND pd.date >= '2020-09-09'; -- gives us the data for the last 24 months;
 ```
 
 ![image](https://github.com/user-attachments/assets/1054a98b-604d-4e4c-9f70-a987484c76b2)
@@ -65,43 +72,62 @@ WHERE c.client_id = 148        -- Paul Bistre only
 
 ## Step 2 – Performance & Risk Questions
 
-> All queries reference `invest.v_santiago_rios_castro_bistre_holdings`.
+> All queries reference `invest.paul_bistre_portfolio_view`.
 
-### Question 1 – Multi‑Period Returns *(10 pts)*
+### Analysis 1 – Multi‑Period Returns 
 
-Calculate the trailing 12‑, 18‑, and 24‑month total return for each security and for the portfolio as a whole.
+I will calculate the trailing 12‑, 18‑, and 24‑month total return for each security and for the portfolio as a whole.
+
+First, I will start by calculating the trailing 12‑, 18‑, and 24‑month total return for each security as follows:
 
 ```sql
-WITH base AS (
-    SELECT asset_id,
-           price_date,
-           close_price,
-           LAG(close_price, 252)  OVER (PARTITION BY asset_id ORDER BY price_date)  AS price_12m,
-           LAG(close_price, 378)  OVER (PARTITION BY asset_id ORDER BY price_date)  AS price_18m,
-           LAG(close_price, 504)  OVER (PARTITION BY asset_id ORDER BY price_date)  AS price_24m
-    FROM   invest.v_santiago_rios_castro_bistre_holdings
-)
-SELECT asset_id,
-       MAX(price_date)                               AS as_of,
-       (MAX(close_price) / MAX(price_12m) - 1) * 100 AS rtn_12m_pct,
-       (MAX(close_price) / MAX(price_18m) - 1) * 100 AS rtn_18m_pct,
-       (MAX(close_price) / MAX(price_24m) - 1) * 100 AS rtn_24m_pct
-FROM   base
-GROUP  BY asset_id
-ORDER  BY asset_id;
+SELECT
+    ticker,
+    AVG(r.ror_12m) AS avg_return_12_months,
+    AVG(r.ror_18m) AS avg_return_18_months,
+    AVG(r.ror_24m) AS avg_return_24_months
+FROM (
+    SELECT 
+        z.*,
+        (z.value - z.p0_12m) / z.p0_12m AS ror_12m,  -- To calculate rate of return
+        (z.value - z.p0_18m) / z.p0_18m AS ror_18m,  
+        (z.value - z.p0_24m) / z.p0_24m AS ror_24m   
+    FROM (
+        SELECT *,
+            LAG(value, 252) OVER (PARTITION BY ticker ORDER BY date) AS p0_12m, -- 12 months (252 trading days)
+            LAG(value, 378) OVER (PARTITION BY ticker ORDER BY date) AS p0_18m, -- 18 months (378 trading days)
+            LAG(value, 504) OVER (PARTITION BY ticker ORDER BY date) AS p0_24m  -- 24 months (504 trading days)
+        FROM invest.paul_bistre_portfolio_view
+    ) AS z
+) AS r
+WHERE date = '2022-09-09'  -- To get data from most recent day
+GROUP BY ticker; -- To get values per security
 ```
+![image](https://github.com/user-attachments/assets/079143ae-ac81-43ae-86ea-70ff8ac14e39)
 
-| Asset | 12‑M Return | 18‑M Return | 24‑M Return |
-| ----- | ----------- | ----------- | ----------- |
-| UNG   | 59 %        | 179 %       | 118 %       |
-| PFIX  | 56 %        | 42 %        | 98 %        |
-| …     | …           | …           | …           |
-
-*(Add full table of results.)*
+I will now calculate the trailing 12‑, 18‑, and 24‑month total return for the overall portfolio.
+```sql
+SELECT 
+    AVG((value - p12) / p12) AS avg_return_12_months,
+    AVG((value - p18) / p18) AS avg_return_18_months,
+    AVG((value - p24) / p24) AS avg_return_24_months
+FROM (
+    SELECT 
+        value,
+        LAG(value, 252) OVER(PARTITION BY ticker ORDER BY date) AS p12,
+        LAG(value, 378) OVER(PARTITION BY ticker ORDER BY date) AS p18,
+        LAG(value, 504) OVER(PARTITION BY ticker ORDER BY date) AS p24,
+        date
+    FROM invest.paul_bistre_portfolio_view
+) AS sub
+WHERE date = '2022-09-09'
+;
+```
+![image](https://github.com/user-attachments/assets/47250f22-1ac7-4883-9dc0-253d4a315430)
 
 #### Insights
 
-* **UNG, PFIX, CNC** led the 12‑month period with 59 %, 56 %, and 48 % respectively.
+* **UNG, PFIX, CNC** led the 12‑month period with 59 %, 56 %, and 48 % average returns respectively.
 * The portfolio’s aggregate 12‑month return was **‑4.7 %**, indicating a recent draw‑down despite standout winners.
 * Over 24 months the portfolio is **+8.4 %**, showing long‑term gains but a deteriorating short‑term trend.
 
