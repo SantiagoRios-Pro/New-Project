@@ -9,8 +9,8 @@
 ## Table of Contents
 
 1. [Part 1 – SQL Return & Risk Analysis](#part-1)
-   1.1. [Step 2 – Create a Client‐Specific View](#step-2)
-   1.2. [Step 3 – Performance & Risk Questions](#step-3)
+1.1. [Step 1 – Create a Client‐Specific View](#step-2)
+1.2. [Step 2 – Performance & Risk Questions](#step-3)
 2. [Part 2 – Tableau Dashboard & Management Report](#part-2)
 3. [Recommendations & Next Steps](#recommendations)
 
@@ -28,7 +28,7 @@
 
 <a name="step-2"></a>
 
-## Step 2 – Create a Client View
+## Step 1 – Create a Client View
 
 The view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 3.
 
@@ -63,7 +63,7 @@ WHERE c.client_id = 148        -- Paul Bistre only
 
 <a name="step-3"></a>
 
-## Step 3 – Performance & Risk Questions
+## Step 2 – Performance & Risk Questions
 
 > All queries reference `invest.v_santiago_rios_castro_bistre_holdings`.
 
