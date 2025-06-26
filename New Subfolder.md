@@ -9,10 +9,12 @@
 ## Table of Contents
 
 1. [Part 1 – SQL Return & Risk Analysis](#part-1)
-1.1. [Step 1 – Create a Client‐Specific View](#step-2)
-1.2. [Step 2 – Performance & Risk Questions](#step-3)
-2. [Part 2 – Tableau Dashboard & Management Report](#part-2)
-3. [Recommendations & Next Steps](#recommendations)
+
+    1.1. [Step 1 – Create a Client‐Specific View](#step-2)
+
+    1.2. [Step 2 – Performance & Risk Questions](#step-3)
+3. [Part 2 – Tableau Dashboard & Management Report](#part-2)
+4. [Recommendations & Next Steps](#recommendations)
 
 <a name="part-1"></a>
 
@@ -107,12 +109,15 @@ GROUP BY ticker; -- To get values per security
 ```
 ![image](https://github.com/user-attachments/assets/079143ae-ac81-43ae-86ea-70ff8ac14e39)
 
-Top three gainers from these timeframes in terms of average returns: 
-12 months ->
+Top three gainers from these timeframes in terms of average returns:
+
+12 months →  
 ![image](https://github.com/user-attachments/assets/eb7412cc-1e80-4ca2-bb9f-55e410b63b66)
-18 months ->
+
+18 months →  
 ![image](https://github.com/user-attachments/assets/e09af745-6224-4e09-84ae-5693454d5e92)
-24 months ->
+
+24 months →  
 ![image](https://github.com/user-attachments/assets/f2b1a8c5-721e-4940-a56b-37c6636cf36f)
 
 I will now calculate the trailing 12‑, 18‑, and 24‑month total return for the overall portfolio.
@@ -181,16 +186,45 @@ Results sorted from highest to lowest risk:
 
 ---
 
-### Question 3 – Proposed New Investment *(10 pts)*
+### Analysis 3 – Proposed New Investment
+* Business Question: Suggest adding a new investment to your portfolio - what would it be and how much risk 
+(sigma) would it add to your client?  
+
+```sql
+SELECT
+    ticker,
+    AVG(ror) AS avg_ror,
+    STD(ror) AS std_ror,
+    AVG(ror) / STD(ror) AS adjusted_risk
+FROM (
+    SELECT
+        z.ticker,
+        z.date,
+        z.value,
+        z.p0,
+        (z.value - z.p0) / z.p0 AS ror  -- To calculate rate of return
+    FROM (
+        SELECT
+            ticker,
+            date,
+            AVG(value) AS value,
+            LAG(AVG(value), 252) OVER (PARTITION BY ticker ORDER BY date) AS p0  -- To obtain rates for the last year
+        FROM invest.pricing_daily_new  -- To use the entire dataset, not only the holdings from Paul
+        GROUP BY ticker, date
+    ) AS z
+    WHERE z.p0 IS NOT NULL
+) AS r
+GROUP BY ticker;  -- To get values per security
+```
+![image](https://github.com/user-attachments/assets/de028165-a986-49de-b386-59e9e3d67eca)
 
 **Recommended security:** `PFIX` (Simplify Interest Rate Hedge ETF)
 
-| Metric       | Value |
-| ------------ | ----- |
-| Sigma (12 M) | 0.372 |
-| Sharpe Ratio | 0.76  |
+This query helps us examine the average return, standard deviation (as a measure of risk), and risk-adjusted return (comparable to the Sharpe ratio) for each security using price data from all tickers in the investment dataset, not just those currently held in Paul’s portfolio. For this reason, we use the pricing_daily_new table instead of the client-specific view created in Step 1. These metrics help assess which assets deliver the most efficient returns relative to their level of risk.
 
-Adding a 5 % sleeve of PFIX *lowers* portfolio volatility (σ\_port ↓ 0.02) while boosting expected return due to its superior risk‑adjusted profile.
+Based on the results, I would recommend adding the ETF with the ticker PFIX to Paul’s portfolio. PFIX has the highest risk-adjusted return (0.76) among all assets analyzed, meaning it offers the best return relative to the amount of risk involved. This makes it a highly efficient investment option.
+
+For Paul, who aims to maximize returns while maintaining a moderate risk profile, PFIX aligns well with his goals. Its standard deviation (3.72) reflects moderate volatility, and its adjusted risk is superior to some of the existing holdings in the portfolio, such as COF (0.54) and CNBS (0.46). Incorporating PFIX could strengthen the overall return potential of the portfolio without significantly increasing its risk.
 
 ---
 
