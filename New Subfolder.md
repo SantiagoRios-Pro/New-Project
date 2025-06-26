@@ -1,4 +1,4 @@
-# Portfolio Analysis for Client #148 (Paul Bistre)
+# Portfolio Analysis for Client Paul Bistre
 
 **Author:** Santiago Rios Castro
 **Topic:** Data Extraction & Visualization
@@ -30,7 +30,7 @@
 
 ## Step 1 – Create a Client View
 
-The view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 3.
+The view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 2.
 
 ```sql
 USE Invest; -- database with all clients
@@ -106,9 +106,12 @@ GROUP BY ticker; -- To get values per security
 ![image](https://github.com/user-attachments/assets/079143ae-ac81-43ae-86ea-70ff8ac14e39)
 
 Top three gainers from these timeframes in terms of average returns: 
-12 months -> ![image](https://github.com/user-attachments/assets/eb7412cc-1e80-4ca2-bb9f-55e410b63b66)
-18 months -> ![image](https://github.com/user-attachments/assets/e09af745-6224-4e09-84ae-5693454d5e92)
-24 months -> ![image](https://github.com/user-attachments/assets/f2b1a8c5-721e-4940-a56b-37c6636cf36f)
+12 months ->
+![image](https://github.com/user-attachments/assets/eb7412cc-1e80-4ca2-bb9f-55e410b63b66)
+18 months ->
+![image](https://github.com/user-attachments/assets/e09af745-6224-4e09-84ae-5693454d5e92)
+24 months ->
+![image](https://github.com/user-attachments/assets/f2b1a8c5-721e-4940-a56b-37c6636cf36f)
 
 I will now calculate the trailing 12‑, 18‑, and 24‑month total return for the overall portfolio.
 
