@@ -75,6 +75,8 @@ WHERE
 > All queries reference `invest.paul_bistre_portfolio_view`.
 
 ### Analysis 1 – Multi‑Period Returns 
+* Business Question: What is the most recent 12 months, 18 months, 24 months return for each of the securities 
+(and for the entire portfolio)?
 
 I will calculate the trailing 12‑, 18‑, and 24‑month total return for each security and for the portfolio as a whole.
 
@@ -140,40 +142,42 @@ These queries helped us evaluate individual asset performance and overall portfo
 
 These results suggest that while some assets have consistently performed well, others have significantly underperformed, especially in the more recent periods. The positive long-term trend contrasts with the short-term declines, signaling a potential shift in performance momentum. This emphasizes the need for a thorough review of the current asset allocation and investment strategies to address recent underperformance and ensure the portfolio stays aligned with long-term growth objectives.
 
-![12 – 24 Month Return Trend](INSERT_GRAPH_PATH_HERE)
-
 ---
 
-### Question 2 – One‑Year Sigma & Average Daily Return *(10 pts)*
+### Analysis 2 – One‑Year Sigma & Average Daily Return
+* Business Question: What is the most recent 12months sigma (risk) for each of the securities? What is the average 
+daily return for each of the securities?
 
 ```sql
-WITH daily_rtn AS (
-    SELECT asset_id,
-           price_date,
-           (close_price / LAG(close_price) OVER (PARTITION BY asset_id ORDER BY price_date) - 1) AS daily_rtn
-    FROM   invest.v_santiago_rios_castro_bistre_holdings
-    WHERE  price_date >= CURRENT_DATE - INTERVAL '365 days'
+WITH average_daily_return AS (
+    SELECT
+        ticker,
+        date,
+        (value - LAG(value) OVER (PARTITION BY ticker ORDER BY date)) /
+        LAG(value) OVER (PARTITION BY ticker ORDER BY date) AS average_daily_return  -- To obtain daily rates
+    FROM invest.paul_bistre_portfolio_view
+    WHERE date >= '2021-09-09'  -- To get data for the last year
 )
-SELECT asset_id,
-       AVG(daily_rtn) AS avg_daily_rtn,
-       STDDEV(daily_rtn) AS sigma_12m
-FROM   daily_rtn
-GROUP  BY asset_id
-ORDER  BY sigma_12m DESC;
+
+SELECT
+    ticker,
+    average_daily_return,
+    STD(average_daily_return) AS risk          -- Standard deviation of daily returns
+FROM average_daily_return
+WHERE average_daily_return IS NOT NULL
+GROUP BY ticker;                               -- Get one value per security
 ```
 
-| Asset | Avg. Daily Return | Sigma (12 M) |
-| ----- | ----------------- | ------------ |
-| COF   | 0.05 %            | 0.540        |
-| CNBS  | ‑0.02 %           | 0.460        |
-| …     | …                 | …            |
+![image](https://github.com/user-attachments/assets/d2a2dfb6-0046-4206-bd46-3c208d076035)
+
+Results sorted from highest to lowest risk:
+![image](https://github.com/user-attachments/assets/3d256be8-397b-4d08-a8ba-4efa26ff4882)
+
+
 
 #### Insights
 
-* Holdings cluster in **low–moderate risk** (σ ≤ 0.30), matching Paul’s stated profile.
-* A few positions (e.g. COF, CNBS) deliver **high volatility without commensurate return** – clear candidates for review.
-
-![Risk vs Return Scatter](INSERT_SCATTER_PATH_HERE)
+ This query provides the average daily rate of return and the corresponding risk for each asset in the client’s portfolio, based on the past 12 months of data. The sorted results show that several assets like UNG, SVIX or ROST carry high risk while delivering low or negative returns, highlighting the need to reassess and potentially replace these investments with ones that offer stronger performance.
 
 ---
 
