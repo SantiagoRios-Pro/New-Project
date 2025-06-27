@@ -1,6 +1,6 @@
 # 🛠️ Data Upload to MySQL Using Command Line
 
-To demonstrate the use of command line to upload and manage data in a database, I have uploaded the [`invest_data.zip`](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/invest_data.zip) 
+To demonstrate the use of Command line to upload and manage data in a database, I have uploaded the [`invest_data.zip`](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/invest_data.zip) 
 datasets into the 'invest' MySQL database using **PowerShell**, **Command Prompt**, and native **SQL commands**.
 
 This process involved converting the CSV files to UTF-8 format to ensure compatibility, then loading them into the database
