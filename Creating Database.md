@@ -1,16 +1,15 @@
-## 🧱 Database Schema: `invest`
+# 🧱 Database Schema: `invest`
 
-This section documents the SQL schema and purpose of each table used in the `invest` database.
+This section of the project outlines the SQL code used to create the invest database, along with the purpose of each table. Below each table definition, you’ll find a data dictionary that explains the meaning of each attribute.
 
 ---
 
 ```sql
-CREATE DATABASE invest;
+CREATE DATABASE invest; -- This is going to be our database for this project
 USE invest;
-🟢 account_dim
-sql
-Copy
-Edit
+```
+## Table: account_dim
+```sql
 CREATE TABLE account_dim (
     row_names INT,
     account_id INT PRIMARY KEY,
@@ -25,24 +24,17 @@ CREATE TABLE account_dim (
 Description:
 Stores account-level information for each customer. Each row represents an individual account and its associated metadata.
 
-account_id (PK): Unique identifier for the account.
+* row_names: A temporary or internal identifier used during data import or processing.
+* account_id (PK): Unique identifier for the account.
+* opt_38: Optional account flag or classification.
+* opt38_desc: Description of the opt_38 code.
+* client_id: Reference to the client who owns the account.
+* main_account: Indicates if this is the primary account.
+* acct_open_date: The date the account was opened.
+* acct_open_status: Status code indicating if the account is active, closed, etc.
 
-opt_38: Optional account flag or classification.
-
-opt38_desc: Description of the opt_38 code.
-
-client_id: Reference to the client who owns the account.
-
-main_account: Indicates if this is the primary account.
-
-acct_open_date: The date the account was opened.
-
-acct_open_status: Status code indicating if the account is active, closed, etc.
-
-🟢 customer_details
+## Table: customer_details
 ```sql
-Copy
-Edit
 CREATE TABLE customer_details (
     row_names VARCHAR(250),
     customer_id INT PRIMARY KEY,
@@ -56,18 +48,16 @@ CREATE TABLE customer_details (
 Description:
 Contains personal and contact information for each customer.
 
-customer_id (PK): Unique ID for the customer.
+* row_names: A temporary or internal identifier used during data import or processing.
+* customer_id: A unique integer that serves as the primary key for each customer.
+* full_name: The customer’s full name, potentially redundant if first and last names are also used.
+* first_name: The customer's first name.
+* last_name: The customer's last name.
+* email: The customer's email address.
+* customer_location: The location or region where the customer is based.
 
-full_name, first_name, last_name: Name fields (stored redundantly).
-
-email: Email address.
-
-customer_location: Geographical or market location of the customer.
-
-🟢 holdings_current
+## Table: holdings_current
 ```sql
-Copy
-Edit
 CREATE TABLE holdings_current (
     row_names INT PRIMARY KEY,
     account_id INT,
@@ -82,26 +72,17 @@ CREATE TABLE holdings_current (
 Description:
 Captures current holdings per account and ticker, including position details and pricing type.
 
-row_names (PK): Internal row ID.
+* row_names: A temporary or internal identifier used during data import or processing.
+* account_id: Links to account_dim.
+* ticker: Ticker symbol of the security being held (e.g., AAPL, SLV).
+* date: The date the holding information was recorded.
+* variable: Identifies the security and its price adjustment type (e.g., SLV.Adjusted).
+* value: The monetary value or market value of the holding.
+* price_type: Indicates how the price was calculated (e.g., Adjusted, Close).
+* quantity: Number of shares or units held for that specific security.
 
-account_id: Links to account_dim.
-
-ticker: The security's ticker symbol.
-
-date: Date of the holding record.
-
-variable: Financial metric or classification.
-
-value: Metric value (e.g., market value).
-
-price_type: Type of price used (e.g., adjusted, closing).
-
-quantity: Number of units held.
-
-🟢 pricing_daily_new
+## Table: pricing_daily_new
 ```sql
-Copy
-Edit
 CREATE TABLE pricing_daily_new (
     row_names INT PRIMARY KEY,
     date DATE,
@@ -114,22 +95,15 @@ CREATE TABLE pricing_daily_new (
 Description:
 Contains daily pricing information for securities, possibly for multiple variables (e.g., price, volume).
 
-row_names (PK): Internal row ID.
+* row_names: A temporary or internal identifier used during data import or processing.
+* date: The trading date associated with the price data.
+* variable: Specifies the type of metric (e.g., adjusted close, volume).
+* value: Numerical value of the specified metric for a given ticker and date.
+* ticker: Ticker symbol representing the security.
+* price_type: Indicates how the price is derived (e.g., raw, adjusted).
 
-date: The trading date.
-
-variable: Type of financial variable (e.g., close, volume).
-
-value: Value of the variable.
-
-ticker: Ticker symbol.
-
-price_type: Indicates if price is raw, adjusted, etc.
-
-🟢 security_masterlist
+## 🟢Table: security_masterlist
 ```sql
-Copy
-Edit
 CREATE TABLE security_masterlist (
     row_names INT,
     id BIGINT,
@@ -144,14 +118,11 @@ CREATE TABLE security_masterlist (
 Description:
 Reference table listing all known securities with classification details.
 
-ticker (PK): Unique ticker symbol for the security.
-
-security_name: Full name of the security.
-
-sp500_weight: Weight in the S&P 500 (if applicable).
-
-sec_type: Type of security (e.g., stock, bond).
-
-major_asset_class: High-level asset classification.
-
-minor_asset_class: More granular asset classification.
+* row_names: A temporary or internal identifier used during data import or processing.
+* id: Unique identifier for the security (may differ from ticker).
+* security_name: Full name or description of the security.
+* ticker: Unique ticker symbol used to identify the security (Primary Key).
+* sp500_weight: Security's weight in the S&P 500 index, if applicable.
+* sec_type: Type of security (e.g., equity, bond, ETF).
+* major_asset_class: Broad classification category (e.g., equities, fixed income).
+* minor_asset_class: More specific sub-category within the major asset class (e.g., large-cap, municipal bonds).
