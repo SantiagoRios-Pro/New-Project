@@ -1,7 +1,7 @@
 # Portfolio Analysis for Client Paul Bistre
 
 **Author:** Santiago Rios Castro
-**Topic:** Data Extraction & Visualization
+**Topic:** Data Extraction (SQL) & Visualization (Tableau)
 **Date:** December 15, 2024
 
 ---
@@ -32,7 +32,7 @@
 
 ## Step 1 – Create a Client View
 
-The view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 2.
+The following view consolidates Paul Bistre’s holdings into a single structure that powers every query in Step 2.
 
 ```sql
 USE Invest; -- database with all clients
@@ -63,12 +63,51 @@ WHERE
 
 
 > **Why a view?**
->
-> * Keeps analysis reproducible.
-> * Restricts every query to client‑specific data.
-> * Removes repetitive joins in later sections.
+
+Using a view in our analysis makes the process much more efficient, especially since the full dataset is large and running queries with multiple joins can take a lot of time and computing power. The view helps by keeping everything we need in one place, so we don’t have to repeat the same joins in every step. It also makes sure we’re always looking at data specific to the client, and it keeps our analysis consistent and easy to reproduce later on.
 
 ---
+
+## Data Exploration
+
+In how many assets has our client invested during the last two years?
+```sql
+SELECT COUNT(DISTINCT ticker) AS ticker_count
+FROM paul_bistre_portfolio_view;
+```
+![image](https://github.com/user-attachments/assets/3079e3e5-2dc9-4269-b385-ecf48eed324e)
+
+It looks like Paul’s portfolio has held 67 different assets, but that’s a bit too broad on its own. To get a clearer picture, I need to take a closer look at the types of assets he’s invested in. Let’s examine how many asset classes are represented and how these are distributed across his portfolio.
+
+```sql
+SELECT
+    major_asset_class,
+    COUNT(DISTINCT ticker) AS num_tickers
+FROM paul_bistre_portfolio_view
+GROUP BY major_asset_class
+ORDER BY num_tickers DESC;   -- highest-to-lowest
+```
+
+![image](https://github.com/user-attachments/assets/e673e963-0559-4705-877e-9cfb0b3a4453)
+
+Paul’s portfolio looks fairly well-diversified, with investments spread across equities, fixed income, alternatives, and commodities. However, it looks like “fixed income” was entered in two different formats, so we’ll need to clean that up to ensure a clearer view when we build the dashboard later on. Overall, this kind of distribution suggests a balanced approach, probably for an investor trying to reduce risk while still taking advantage of different types of opportunities in the market.
+
+Now let's look at the minor classes in Paul's portfolio.
+
+```sql
+SELECT
+    minor_asset_class,
+    COUNT(DISTINCT ticker) AS num_tickers
+FROM paul_bistre_portfolio_view
+GROUP BY minor_asset_class
+ORDER BY num_tickers DESC;
+```
+
+![image](https://github.com/user-attachments/assets/f4fccc60-76e9-4c5d-9798-0b298890b25a)
+
+Paul’s portfolio holds 67 tickers in total, but only 34 of them are labeled with a specific minor asset class. That means 33 tickers don’t have a classification, likely due to missing or inconsistent data. We’ll want to clean this up before building the dashboard so that we can filter and analyze the data more accurately.
+
+From the tickers that are classified, we can see a strong focus on large-cap investments (19 tickers), which points to a strategy centered around stable, well-established companies. The rest are spread across more specialized areas like precious metals, cannabis, gold, and oil, with a few in carbon and fixed income categories like corporate bonds and investment-grade corporate bonds.
 
 <a name="step-3"></a>
 
@@ -176,6 +215,7 @@ GROUP BY ticker;                               -- Get one value per security
 ![image](https://github.com/user-attachments/assets/d2a2dfb6-0046-4206-bd46-3c208d076035)
 
 Results sorted from highest to lowest risk:
+
 ![image](https://github.com/user-attachments/assets/3d256be8-397b-4d08-a8ba-4efa26ff4882)
 
 
@@ -186,7 +226,46 @@ Results sorted from highest to lowest risk:
 
 ---
 
-### Analysis 3 – Proposed New Investment
+### Analysis 3 – Risk‑Adjusted Returns
+* Business Question: Which of the securities is best from the rest (with highest risk adjusted returns), why? 
+
+```sql
+SELECT
+    ticker,
+    AVG(ror) AS avg_ror,
+    STD(ror) AS std_ror,
+    AVG(ror) / STD(ror) AS adjusted_risk
+FROM (
+    SELECT
+        z.ticker,
+        z.date,
+        z.value,
+        z.p0,
+        (z.value - z.p0) / z.p0 AS ror  -- To calculate rate of return
+    FROM (
+        SELECT
+            ticker,
+            date,
+            AVG(value) AS value,
+            LAG(AVG(value), 252) OVER (PARTITION BY ticker ORDER BY date) AS p0  -- To obtain rates for the last year
+        FROM invest.paul_bistre_portfolio_view  -- To use the entire dataset, not only the holdings from Paul
+        GROUP BY ticker, date
+    ) AS z
+    WHERE z.p0 IS NOT NULL
+) AS r
+GROUP BY ticker -- To get values per security
+ORDER BY adjusted_risk DESC;  
+```
+To answer the question, we calculated the risk-adjusted return for each security using the formula:
+AVG(returns for ticker) / STD(returns for ticker). This formula is a simplified version of the Sharpe Ratio, a common financial metric that evaluates how much return an investment generates relative to its risk (volatility). When the risk-free rate is assumed to be zero, the Sharpe Ratio simplifies to average return divided by standard deviation, exactly what this formula represents.
+
+The SQL code first computes the daily rate of return for each ticker using lagged price values, then calculates the average return and standard deviation over the past 12 months. Finally, it divides the average return by its standard deviation to obtain the risk-adjusted return for each asset.
+
+Based on this analysis, the security with the highest risk-adjusted return is LBAY, meaning it delivers the greatest return per unit of risk taken. It is followed by RINF and KO, which also show strong performance relative to their risk levels. These assets stand out because they generated higher returns while maintaining relatively low volatility, making them more efficient investment options within our client's portfolio.
+
+---
+
+### Analysis 4 – Proposed New Investment
 * Business Question: Suggest adding a new investment to your portfolio - what would it be and how much risk 
 (sigma) would it add to your client?  
 
@@ -220,46 +299,11 @@ GROUP BY ticker;  -- To get values per security
 
 **Recommended security:** `PFIX` (Simplify Interest Rate Hedge ETF)
 
-This query helps us examine the average return, standard deviation (as a measure of risk), and risk-adjusted return (comparable to the Sharpe ratio) for each security using price data from all tickers in the investment dataset, not just those currently held in Paul’s portfolio. For this reason, we use the pricing_daily_new table instead of the client-specific view created in Step 1. These metrics help assess which assets deliver the most efficient returns relative to their level of risk.
+This query is identical to the one used in the previous question, but it analyzes data for all tickers in the invest dataset, not just those currently held in Paul’s portfolio. That’s why we use the pricing_daily_new table instead of the view created in Step 1. This broader approach allows us to evaluate which assets could offer the most efficient returns relative to their level of risk.
 
 Based on the results, I would recommend adding the ETF with the ticker PFIX to Paul’s portfolio. PFIX has the highest risk-adjusted return (0.76) among all assets analyzed, meaning it offers the best return relative to the amount of risk involved. This makes it a highly efficient investment option.
 
 For Paul, who aims to maximize returns while maintaining a moderate risk profile, PFIX aligns well with his goals. Its standard deviation (3.72) reflects moderate volatility, and its adjusted risk is superior to some of the existing holdings in the portfolio, such as COF (0.54) and CNBS (0.46). Incorporating PFIX could strengthen the overall return potential of the portfolio without significantly increasing its risk.
-
----
-
-### Question 4 – Risk‑Adjusted Returns *(10 pts)*
-
-```sql
-WITH stats AS (
-    SELECT asset_id,
-           AVG(daily_rtn) AS avg_daily,
-           STDDEV(daily_rtn) AS sigma
-    FROM   (
-        SELECT asset_id,
-               price_date,
-               (close_price / LAG(close_price) OVER (PARTITION BY asset_id ORDER BY price_date) - 1) AS daily_rtn
-        FROM   invest.v_santiago_rios_castro_bistre_holdings
-        WHERE  price_date >= CURRENT_DATE - INTERVAL '365 days'
-    ) t
-    GROUP BY asset_id
-)
-SELECT asset_id,
-       avg_daily / NULLIF(sigma,0) AS risk_adj_rtn
-FROM   stats
-ORDER BY risk_adj_rtn DESC;
-```
-
-| Rank | Asset | Risk‑Adjusted Return |
-| ---- | ----- | -------------------- |
-| 1    | LBAY  | **0.82**             |
-| 2    | RINF  | 0.78                 |
-| 3    | KO    | 0.66                 |
-
-#### Insights
-
-* **LBAY** yields the most return per unit of risk, making it the portfolio’s efficiency leader.
-* Replacing laggards like **CNBS** could lift overall Sharpe without altering risk tolerance.
 
 ---
 
