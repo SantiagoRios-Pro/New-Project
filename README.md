@@ -4,6 +4,7 @@
 1. [Creating the Database](1._Creating_Database.md)
 2. [Uploading Data Using Command Line](2._Uploading_Data_Using_Command_Line.md)
 3. [Data Exploration and Analysis](3._Data_Exploration_and_Analysis.md)
+4. [Interactive Dashboard](https://github.com/user-attachments/assets/304483ba-3b4b-4366-9195-6be33a68ecd4)
 
 ### 🎯 Business Task
 This project focuses on analyzing the investment performance of one specific client at the firm, Paul Bistro (`client_id = 148`).
@@ -26,6 +27,6 @@ The analysis is guided by the following four business objectives:
 - **Tableau**: Used to build an interactive dashboard – [View Dashboard](https://public.tableau.com/app/profile/santiago.rios.castro/viz/PortfolioPerformance_17510393369460/Dashboard1)
 
 
-### 📝 Dashboard
+### 📈 Dashboard
 ![image](https://github.com/user-attachments/assets/304483ba-3b4b-4366-9195-6be33a68ecd4)
 
