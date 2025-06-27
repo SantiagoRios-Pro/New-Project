@@ -23,8 +23,9 @@ The analysis is guided by the following four business objectives:
 ### 🧰 Tools Used
 - **MySQL**: To create the database schema ([View SQL Scripts](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/Creating%20Database.md)) and analyze the portfolio ([View SQL Queries](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/Data%20Exploration%20and%20Analysis.md))  
 - **PowerShell & Command Prompt**: For uploading and managing data files in MySQL ([View Upload Steps](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/Uploading%20Data%20Using%20Command%20Line.md))  
-- **Tableau**: Used to build an interactive dashboard – *[link to dashboard if available]*
+- **Tableau**: Used to build an interactive dashboard – [View Dashboard](https://public.tableau.com/app/profile/santiago.rios.castro/viz/PortfolioPerformance_17510393369460/Dashboard1)
 
 
-### 📝 Posted In
-- *Optional placeholder – consider removing or replacing with actual link*
+### 📝 Dashboard
+![image](https://github.com/user-attachments/assets/304483ba-3b4b-4366-9195-6be33a68ecd4)
+
