@@ -102,7 +102,7 @@ Contains daily pricing information for securities, possibly for multiple variabl
 * ticker: Ticker symbol representing the security.
 * price_type: Indicates how the price is derived (e.g., raw, adjusted).
 
-## 🟢Table: security_masterlist
+## Table: security_masterlist
 ```sql
 CREATE TABLE security_masterlist (
     row_names INT,
