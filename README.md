@@ -10,7 +10,7 @@ The 4 business objectives are the following:
 * Suggest adding a new investment to your portfolio - what would it be and how much risk (sigma) would it add to your client?
 
 ### Data Set
-- The dataset is adapted from my Data Extraction & Visualization taken at Hult International Business School.
+- The dataset is adapted from my Data Extraction & Visualization course taken at Hult International Business School.
 - Each of the files uploaded in the table can be found here
 
 ### Tools
