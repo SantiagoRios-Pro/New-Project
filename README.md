@@ -14,7 +14,7 @@ The analysis is guided by the following four business objectives:
 - All the data referenced in this project can be accessed [here](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/invest_data.zip).
 
 ### Tools
-- MySQL: Used to create the database schema (View SQL Scripts) and run SQL queries to analyze the client portfolio (View SQL Scripts) 
+- MySQL: Used to create the database schema ([View SQL Scripts](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/Creating%20Database.md)) and run SQL queries to analyze the client portfolio (View SQL Scripts) 
 - PowerShell & Command Prompt: Used to upload and manage data files in MySQL using LOAD DATA LOCAL INFILE.
 - Tableau: Used to build an interactive dashboard.
 
