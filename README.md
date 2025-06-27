@@ -5,6 +5,7 @@
 2. [Uploading Data Using Command Line](2._Uploading_Data_Using_Command_Line.md)
 3. [Data Exploration and Analysis](3._Data_Exploration_and_Analysis.md)
 4. [Interactive Dashboard](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/4.%20Interactive%20Dashboard.md)
+5. [Recommendations](https://github.com/SantiagoRios-Pro/Tableau-Projects/blob/main/5.%20Recommendations.md)
 
 ### 🎯 Business Task
 This project focuses on analyzing the investment performance of one specific client at the firm, Paul Bistro (`client_id = 148`).
